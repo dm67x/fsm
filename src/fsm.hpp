@@ -14,26 +14,27 @@ template<typename T>
 using Link = std::pair<std::pair<State, State>, T>;
 
 template<typename T>
-struct FST {
+struct FSM {
     std::vector<Link<T>> links;
     unsigned short current_id;
 
-    FST() : current_id(0) {}
+    FSM() : current_id(0) {}
 
     inline State new_state(bool end = false) {
         return (this->current_id++ << 1) | (end ? 0x1 : 0x0);
     }
 
-    inline void new_link(State from, State to, T by) {
+    inline FSM* new_link(State from, State to, T by) {
         links.push_back(std::make_pair(std::make_pair(from, to), by));
+        return this;
     }
 
     inline bool is_valid() const {
         return true;
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const FST& fst) {
-        for (auto link : fst.links) {
+    friend std::ostream& operator<<(std::ostream& out, const FSM& fsm) {
+        for (auto link : fsm.links) {
             out << state_id(link.first.first) << " -> " << state_id(link.first.second)
                 << " [" << link.second << "]" << std::endl;
         }
