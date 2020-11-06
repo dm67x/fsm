@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 #include <ostream>
+#include <algorithm>
 
 #define state_id(state) ((state & 0xFFFE) >> 1)
 #define state_value(state) (state & 0x1)
@@ -30,6 +31,18 @@ struct FSM {
     }
 
     inline bool is_valid() const {
+        for (State i = 0; i < current_id; i++) {
+            std::vector<T> values;
+            for (auto link : links) {
+                if (state_id(link.first.first) == i) {
+                    auto it = std::find(values.begin(), values.end(), link.second);
+                    if (it != values.end()) {
+                        return false;
+                    }
+                    values.push_back(link.second);
+                }
+            }
+        }
         return true;
     }
 
@@ -38,6 +51,7 @@ struct FSM {
             out << state_id(link.first.first) << " -> " << state_id(link.first.second)
                 << " [" << link.second << "]" << std::endl;
         }
+        out << "FSM is " << (fsm.is_valid() ? "valid" : "unvalid") << std::endl;
         return out;
     }
 };
