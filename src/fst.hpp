@@ -28,10 +28,6 @@ struct FST {
         links.push_back(std::make_pair(std::make_pair(from, to), by));
     }
 
-    inline void set_start(State* state) {
-        this->start = state;
-    }
-
     inline bool is_valid() const {
         return true;
     }
