@@ -8,13 +8,13 @@ int main(int argc, char** argv)
     (void)argc;
     (void)argv;
 
-    Alphabet<char> alphabet;
-    new_alphabet(alphabet, 'a', 'b');
+    fsm::Alphabet<char> alphabet;
+    fsm::new_alphabet(alphabet, 'a', 'b');
 
-    FSM<char> fsm(alphabet);
-    State s1 = fsm.new_state();
-    State s2 = fsm.new_state(true);
-    State s3 = fsm.new_state();
+    fsm::FSM<char> fsm(alphabet);
+    fsm::State s1 = fsm.new_state();
+    fsm::State s2 = fsm.new_state(true);
+    fsm::State s3 = fsm.new_state();
 
     try {
         fsm.new_link(s1, s2, 'a')
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
             ->new_link(s3, s3, 'a')
             ->new_link(s3, s3, 'b');
 
-        fsm_export::to_ppm(fsm, "exported");
+        fsm::io::to_ppm(fsm, "exported");
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
     }

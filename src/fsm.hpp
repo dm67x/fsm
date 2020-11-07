@@ -11,6 +11,8 @@
 #define state_id(state) ((state & 0xFFFE) >> 1)
 #define state_value(state) (state & 0x1)
 
+namespace fsm {
+    
 // least significant bit for the end value
 // most significant bits are for the identifier
 using State = unsigned short;
@@ -102,3 +104,5 @@ struct FSM {
         return out;
     }
 };
+
+}

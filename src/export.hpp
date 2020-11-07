@@ -5,7 +5,8 @@
 #include <iostream>
 #include <fstream>
 
-namespace fsm_export {
+namespace fsm {
+namespace io {
 
 template<typename T>
 void to_ppm(const FSM<T>& fsm, const std::string& filename) {
@@ -25,4 +26,5 @@ void to_ppm(const FSM<T>& fsm, const std::string& filename) {
     file.close();
 }
 
+}
 }
