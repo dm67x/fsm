@@ -1,5 +1,4 @@
 #include "parser.hpp"
-#include "export.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -24,7 +23,7 @@ int main(int argc, char** argv)
             ->new_link(s3, s3, 'a')
             ->new_link(s3, s3, 'b');
 
-        fsm::io::to_ppm(fsm, "exported");
+        std::cout << fsm << std::endl;
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
     }
