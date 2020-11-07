@@ -69,9 +69,6 @@ struct FSM {
             size_t counter = 0;
             for (auto it = link.begin(); it != link.end(); it++) {
                 if (s == state_id(it->first.first)) {
-                    if (!exist_in_alphabet(alphabet, it->first.second)) {
-                        return false;
-                    }
                     counter++;
                 }
             }
