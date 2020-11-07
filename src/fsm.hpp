@@ -1,9 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <utility>
 #include <ostream>
 #include <algorithm>
+#include <type_traits>
+#include <exception>
 
 #define state_id(state) ((state & 0xFFFE) >> 1)
 #define state_value(state) (state & 0x1)
@@ -12,44 +15,70 @@
 // most significant bits are for the identifier
 using State = unsigned short;
 template<typename T>
-using Link = std::pair<std::pair<State, State>, T>;
+using Link = std::map<std::pair<State, T>, State>;
+
+template<typename T>
+using Alphabet = std::vector<T>;
+
+template<typename T>
+void new_alphabet(Alphabet<T>& alphabet, T value) {
+    alphabet.push_back(value);
+}
+
+template<typename T, typename... Values>
+void new_alphabet(Alphabet<T>& alphabet, T value, Values... values) {
+    alphabet.push_back(value);
+    return new_alphabet(alphabet, values...);
+}
+
+class AlphabetException : public std::exception {
+    virtual const char* what() const throw() {
+        return "Element not found in the alphabet";
+    }
+};
 
 template<typename T>
 struct FSM {
-    std::vector<Link<T>> links;
+    Alphabet<T>& alphabet;
+    Link<T> link;
     unsigned short current_id;
 
-    FSM() : current_id(0) {}
+    FSM(Alphabet<T>& alphabet) : alphabet(alphabet), current_id(0) {}
 
     inline State new_state(bool end = false) {
         return (this->current_id++ << 1) | (end ? 0x1 : 0x0);
     }
 
     inline FSM* new_link(State from, State to, T by) {
-        links.push_back(std::make_pair(std::make_pair(from, to), by));
+        auto it = std::find(alphabet.begin(), alphabet.end(), by);
+        if (it == alphabet.end()) {
+            throw AlphabetException();
+        }
+        link.insert(std::make_pair(std::make_pair(from, by), to));
         return this;
     }
 
-    inline bool is_valid() const {
-        for (State i = 0; i < current_id; i++) {
-            std::vector<T> values;
-            for (auto link : links) {
-                if (state_id(link.first.first) == i) {
-                    auto it = std::find(values.begin(), values.end(), link.second);
-                    if (it != values.end()) {
-                        return false;
-                    }
-                    values.push_back(link.second);
-                }
-            }
-        }
+    bool is_valid() const {
         return true;
     }
 
+    bool evaluate(State& current) const {
+        return state_value(current) == 0x1;
+    }
+
+    template<typename... Args>
+    bool evaluate(State& current, T arg, Args... args) const {
+        auto it = link.find(std::make_pair(current, arg));
+        if (it != link.end()) {
+            current = it->second;
+        }
+        return evaluate(current, args...);
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const FSM& fsm) {
-        for (auto link : fsm.links) {
-            out << state_id(link.first.first) << " -> " << state_id(link.first.second)
-                << " [" << link.second << "]" << std::endl;
+        for (auto it = fsm.link.begin(); it != fsm.link.end(); it++) {
+            out << state_id(it->first.first) << " -> " << state_id(it->second)
+                << " [" << it->first.second << "]" << std::endl;
         }
         out << "FSM is " << (fsm.is_valid() ? "valid" : "unvalid") << std::endl;
         return out;
