@@ -1,4 +1,4 @@
-#include "parser.hpp"
+#include "fsm.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -24,6 +24,7 @@ int main(int argc, char** argv)
             ->new_link(s3, s3, 'b');
 
         std::cout << fsm << std::endl;
+        fsm.to_dot("export.dot");
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
     }

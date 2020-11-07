@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <type_traits>
 #include <exception>
+#include <string>
+#include <fstream>
+#include <iostream>
 
 #define state_id(state) ((state & 0xFFFE) >> 1)
 #define state_value(state) (state & 0x1)
@@ -45,11 +48,12 @@ class AlphabetException : public std::exception {
 };
 
 template<typename T>
-struct FSM {
+class FSM {
     Alphabet<T>& alphabet;
     Link<T> link;
     unsigned short current_id;
 
+public:
     FSM(Alphabet<T>& alphabet) : alphabet(alphabet), current_id(0) {}
 
     inline State new_state(bool end = false) {
@@ -102,6 +106,32 @@ struct FSM {
         }
         out << "FSM is " << (fsm.is_valid() ? "valid" : "unvalid") << std::endl;
         return out;
+    }
+
+    bool to_dot(const std::string& filename) const {
+        std::ofstream file(filename, std::ofstream::trunc);
+        if (!file.is_open()) {
+            std::cerr << "cannot open file: " << filename << std::endl;
+            return false;
+        }
+
+        file << "digraph fsm {" << std::endl;
+        std::map<State, bool> states;
+        for (auto it = link.begin(); it != link.end(); it++) {
+            file << "\"" << state_id(it->first.first) << "\" -> \"" << state_id(it->second) 
+                << "\" [label=\"" << it->first.second << "\"]" << std::endl;
+
+            states.insert(std::make_pair(it->first.first, state_value(it->first.first) == 0x1));
+        }
+
+        for (auto it = states.begin(); it != states.end(); it++) {
+            if (it->second) {
+                file << "\"" << state_id(it->first) << "\" [shape=doublecircle]" << std::endl;
+            }
+        }
+        file << "}" << std::endl;
+        file.close();
+        return true;
     }
 };
 
