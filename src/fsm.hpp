@@ -31,6 +31,11 @@ void new_alphabet(Alphabet<T>& alphabet, T value, Values... values) {
     return new_alphabet(alphabet, values...);
 }
 
+template<typename T>
+bool exist_in_alphabet(const Alphabet<T>& alphabet, T value) {
+    return std::find(alphabet.begin(), alphabet.end(), value) != alphabet.end();
+}
+
 class AlphabetException : public std::exception {
     virtual const char* what() const throw() {
         return "Element not found in the alphabet";
@@ -50,8 +55,7 @@ struct FSM {
     }
 
     inline FSM* new_link(State from, State to, T by) {
-        auto it = std::find(alphabet.begin(), alphabet.end(), by);
-        if (it == alphabet.end()) {
+        if (!exist_in_alphabet(alphabet, by)) {
             throw AlphabetException();
         }
         link.insert(std::make_pair(std::make_pair(from, by), to));
@@ -59,6 +63,23 @@ struct FSM {
     }
 
     bool is_valid() const {
+        // all states must have the same number of output
+        // outputs = size of the alphabet
+        for (State s = 0; s < current_id; s++) {
+            size_t counter = 0;
+            for (auto it = link.begin(); it != link.end(); it++) {
+                if (s == state_id(it->first.first)) {
+                    if (!exist_in_alphabet(alphabet, it->first.second)) {
+                        return false;
+                    }
+                    counter++;
+                }
+            }
+
+            if (counter != alphabet.size()) {
+                return false;
+            }
+        }
         return true;
     }
 
